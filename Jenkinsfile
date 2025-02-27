@@ -4,52 +4,27 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                // Clean workspace before starting
                 cleanWs()
-               
-                // Echo the current directory for verification
-                sh 'echo "Current directory: $PWD"'
-               
-                // Clone the repository into workspace instead of Jenkins home
-                sh '''
-                    if [ -d "my_python_project" ]; then
-                        echo "Directory already exists, removing it"
-                        rm -rf my_python_project
-                    fi
-                   
-                    git clone https://github.com/gsindhuja1311/my_python_project.git
-                   
-                    echo "Repository cloned successfully!"
-                    ls -la my_python_project
-                '''
+                sh 'git clone https://github.com/gsindhuja1311/my_python_project.git $WORKSPACE/my_python_project'
+                sh 'ls -la $WORKSPACE/my_python_project'
             }
         }
-       
-        stage('Verify Clone') {
+
+        stage('Setup Python Env & Build Wheel') {
             steps {
-                // Verify in the workspace where we have permissions
-                sh '''
-                    cd my_python_project
-                    ls -la
-                    git status
-                '''
-            }
-        }
-       
-        stage('Build Wheel') {
-            steps {
-                // Change directory to the cloned repository
                 dir('my_python_project') {
-                    sh 'pip install build --break-system-packages'
-                    
-                    sh 'python3 -m build --wheel'
+                    sh '''
+                        python3 -m venv venv
+                        source venv/bin/activate
+                        pip install --upgrade pip build
+                        python3 -m build --wheel
+                    '''
                 }
             }
         }
        
         stage('Build Docker Image') {
             steps {
-                // Change directory to the cloned repository
                 dir('my_python_project') {
                     sh 'docker build -t my-python-app:latest .'
                 }
@@ -58,13 +33,15 @@ pipeline {
        
         stage('Deploy') {
             steps {
-                sh 'docker stop my-python-container || true'
-                sh 'docker rm my-python-container || true'
-                sh 'docker run -d --name my-python-container my-python-app:latest'
+                sh '''
+                    docker stop my-python-container 2>/dev/null || true
+                    docker rm my-python-container 2>/dev/null || true
+                    docker run -d --name my-python-container my-python-app:latest
+                '''
             }
         }
     }
-   
+
     post {
         success {
             echo 'Repository cloned, built, and deployed successfully!'
