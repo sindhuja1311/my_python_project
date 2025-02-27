@@ -2,25 +2,11 @@ pipeline {
     agent any
    
     stages {
-        stage('Setup Python Env & Build Wheel') {
-    steps {
-        dir('my_python_project') {
-            sh '''
-                #!/bin/bash
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install build --break-system-packages
-                python3 -m build --wheel
-            '''
-        }
-    }
-}
-
         stage('Clone Repository') {
             steps {
                 cleanWs()
-                sh 'git clone https://github.com/sindhuja1311/my_python_project.git $WORKSPACE/my_python_project'
-                sh 'ls -la $WORKSPACE/my_python_project'
+                sh "git clone https://github.com/sindhuja1311/my_python_project.git $WORKSPACE/my_python_project"
+                sh "ls -la $WORKSPACE/my_python_project"
             }
         }
 
@@ -28,8 +14,9 @@ pipeline {
             steps {
                 dir('my_python_project') {
                     sh '''
+                        #!/bin/bash
                         python3 -m venv venv
-                        source venv/bin/activate
+                        . venv/bin/activate
                         pip install --upgrade pip build
                         python3 -m build --wheel
                     '''
