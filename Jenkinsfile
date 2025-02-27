@@ -5,7 +5,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 cleanWs()
-                sh 'git clone https://github.com/gsindhuja1311/my_python_project.git $WORKSPACE/my_python_project'
+                sh 'git clone https://github.com/sindhuja1311/my_python_project.git $WORKSPACE/my_python_project'
                 sh 'ls -la $WORKSPACE/my_python_project'
             }
         }
